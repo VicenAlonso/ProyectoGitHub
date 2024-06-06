@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Compra</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/order.css' %}">
+</head>
+<body>
+    <div class="container mt-5">
+        <form id="orderForm" method="POST" action="{% url 'submit_order' %}">
+            {% csrf_token %}
+            <div class="order-header">
+                <div class="left">
+                    <h1>Orden de compra</h1>
+                    <p><strong>Número de orden:</strong> <input type="text" name="order_number" class="form-control" value="{{ next_order_number }}" readonly></p>
+                    <p><strong>Fecha de orden:</strong> <input type="date" name="order_date" class="form-control" required></p>
+                </div>
+                <div class="right">
+                    <h2>Saldo Apps</h2>
+                    <p><input type="text" name="seller_name" class="form-control" value="John Smith" readonly></p>
+                    <p><input type="email" name="seller_email" class="form-control" value="wiz@saldoapps.com" readonly></p>
+                    <p><input type="text" name="seller_phone" class="form-control" value="80289679597" readonly></p>
+                    <p><input type="text" name="seller_website" class="form-control" value="saldoapps.com" readonly></p>
+                    <p><input type="text" name="seller_address" class="form-control" value="Primera calle, 28-32, Chicago, Estados Unidos" readonly></p>
+                </div>
+            </div>
+            <div class="order-details">
+                <h4>Cobrar a</h4>
+                <p><input type="text" name="buyer_name" class="form-control" placeholder="Nombre de la empresa" required></p>
+                <p><input type="email" name="buyer_email" class="form-control" placeholder="Correo electrónico" required></p>
+                <p><input type="text" name="buyer_phone" class="form-control" placeholder="Número de teléfono" required></p>
+                <p><input type="text" name="buyer_address" class="form-control" placeholder="Dirección" required></p>
+                <h4>Enviar a</h4>
+                <input type="text" name="shipping_address" class="form-control mb-3" placeholder="Dirección de envío" required>
+            </div>
+            <div class="currency-selector">
+                <label for="currency">Moneda:</label>
+                <select id="currency" name="currency" class="form-control">
+                    <option value="USD">USD</option>
+                    <option value="CLP">CLP</option>
+                </select>
+            </div>
+            <div class="table-container mt-3">
+                <table class="table table-bordered" id="productTable">
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Precio Neto</th>
+                            <th>Cantidad</th>
+                            <th>Fiscal</th>
+                            <th>Descuento</th>
+                            <th>Total Neto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" name="product_description[]" class="form-control" placeholder="Descripción del producto" required></td>
+                            <td><input type="number" step="0.01" name="product_net_price[]" class="form-control" placeholder="Precio Neto" data-usd="" required></td>
+                            <td><input type="number" name="product_quantity[]" class="form-control" placeholder="Cantidad" required></td>
+                            <td><input type="text" name="product_tax[]" class="form-control" value="19%" readonly></td>
+                            <td><input type="number" step="0.01" name="product_discount[]" class="form-control" placeholder="Descuento" required></td>
+                            <td><input type="number" step="0.01" name="product_total_net[]" class="form-control" placeholder="Total Neto" readonly></td>
+                            <td><button type="button" class="btn btn-danger btn-sm remove-product">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-success" id="addProduct">Agregar Producto</button>
+            </div>
+            <div class="payment-instructions">
+                <h4>Instrucciones de pago</h4>
+                <p><strong>E-mail de Paypal:</strong> <input type="email" name="payment_email" class="form-control" value="wiz@saldoapps.com" required></p>
+                <p><strong>Cheques a nombre de:</strong> <input type="text" name="cheque_to" class="form-control" value="John Smith" required></p>
+                <p><strong>Transferencia bancaria / Enrutamiento (ABA):</strong> <input type="text" name="bank_transfer" class="form-control" value="061120084" required></p>
+            </div>
+            <div class="notes">
+                <h4>Notas</h4>
+                <textarea class="form-control" name="notes" rows="3" placeholder="Notas adicionales"></textarea>
+            </div>
+            <div class="total">
+                <p><strong>Total parcial:</strong> <input type="number" step="0.01" name="subtotal" class="form-control" placeholder="0.00" readonly></p>
+                <p><strong>Descuento (x%):</strong> <input type="number" step="0.01" name="discount_total" class="form-control" placeholder="0.00" readonly></p>
+                <p><strong>Costo de envío:</strong> <input type="number" step="0.01" name="shipping_cost" class="form-control" placeholder="0.00" required></p>
+                <p><strong>Impuesto de venta:</strong> <input type="number" step="0.01" name="tax_total" class="form-control" placeholder="0.00" readonly></p>
+                <p><strong>Total:</strong> <input type="number" step="0.01" name="total" class="form-control" placeholder="0.00" readonly></p>
+                <p><strong>Cantidad pagada:</strong> <input type="number" step="0.01" name="amount_paid" class="form-control" placeholder="0.00"></p>
+                <p><strong>Saldo adeudado:</strong> <input type="number" step="0.01" name="balance_due" class="form-control" placeholder="0.00" readonly></p>
+            </div>
+            <button type="button" class="btn btn-primary mt-3" id="submitOrder">Enviar Orden</button>
+            <a href="{% url 'home' %}" class="btn btn-secondary mt-3">Volver</a>
+        </form>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirmación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Deseas descargar la orden de compra en formato PDF?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="confirmNo">No</button>
+                    <button type="button" class="btn btn-primary" id="confirmYes">Sí</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="{% static 'js/order.js' %}"></script>
+</body>
+</html>

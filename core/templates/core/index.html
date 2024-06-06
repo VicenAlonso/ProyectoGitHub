@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <style>
+        .floating-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div>
+            <h1 class="text-center">Welcome to My Website</h1>
+            <p class="text-center">This is a simple webpage using Django and Bootstrap.</p>
+            <!-- Botón para abrir el modal de inicio de sesión -->
+            <div class="text-center mb-2">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    Iniciar Sesión
+                </button>
+            </div>
+            <!-- Botón para abrir el modal de registro de usuario -->
+            <div class="text-center">
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#registerModal">
+                    Registrar Usuario
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de inicio de sesión -->
+    <div class="modal fade {% if messages %}show{% endif %}" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true" style="{% if messages %}display: block;{% endif %}">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Formulario Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'custom_login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Usuario</label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Usuario" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="link-secondary">¿Olvidaste tu Contraseña?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de registro de usuario -->
+    <div class="modal fade {% if form.errors %}show{% endif %}" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true" style="{% if form.errors %}display: block;{% endif %}">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Registrar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <div class="mb-3">
+                            <label for="regUsername" class="form-label">Usuario</label>
+                            <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" id="regUsername" name="username" placeholder="Usuario" value="{{ form.username.value|default:'' }}">
+                            <div class="invalid-feedback">
+                                {{ form.username.errors }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regEmail" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" id="regEmail" name="email" placeholder="Correo Electrónico" value="{{ form.email.value|default:'' }}">
+                            <div class="invalid-feedback">
+                                {{ form.email.errors }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regPassword1" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" id="regPassword1" name="password1" placeholder="Contraseña">
+                            <div class="invalid-feedback">
+                                {{ form.password1.errors }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regPassword2" class="form-label">Confirmar Contraseña</label>
+                            <input type="password" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" id="regPassword2" name="password2" placeholder="Confirmar Contraseña">
+                            <div class="invalid-feedback">
+                                {{ form.password2.errors }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-secondary w-100">Registrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de mensajes (oculta) -->
+    <div id="messages" class="d-none">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Script para mostrar alertas flotantes -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messages');
+            const floatingAlertContainer = document.createElement('div');
+            floatingAlertContainer.className = 'floating-alert';
+            floatingAlertContainer.innerHTML = messagesContainer.innerHTML;
+            document.body.appendChild(floatingAlertContainer);
+
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    alert.classList.add('show');
+                });
+            }, 500);
+        });
+    </script>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+
+    <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>
